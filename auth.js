@@ -76,16 +76,21 @@ router.get(
 );
 
 // Logout Route
-router.get("/logout", (req, res) => {
+router.post("/logout", (req, res) => {
   res.clearCookie("jwt", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
+    path: "/"
   });
-  req.logout(() => {
-    res.json({ message: "Logged out" });
-    res.redirect("/");
-  });
+    // If you're using PassportJS, you can call req.logout
+    req.logout(err => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      return res.status(200).json({ message: "Logged out successfully" });
+    });
+  
 });
 // Manual Signup
 router.post("/signup", async (req, res) => {
@@ -164,7 +169,7 @@ router.post("/login", async (req, res) => {
 
 // Get user data from token
 router.get("/me", async (req, res) => {
-  //console.log("Cookies received:", req.cookies); // Debugging log
+ // console.log("Cookies received:", req.cookies); // Debugging log
   const token = req.cookies.jwt;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 

@@ -11,6 +11,7 @@ const listingSchema = new mongoose.Schema({
   images: { type: [String] }, // Array of URLs for multiple images
   createdAt: { type: Date, default: Date.now },
   id: { type: Number, unique: true }, // Custom ID field
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Reference to User model
 });
 
 const Listing = mongoose.model('Listing', listingSchema);

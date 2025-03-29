@@ -17,6 +17,8 @@ const authRoutes = require("./auth")
 const cookieParser = require("cookie-parser");
 require("./auth");
 const { ObjectId } = require("mongodb");
+const User = require("./models/user");
+
 
 
 
@@ -107,26 +109,55 @@ app.get("/auth/google/callback",
 
 app.get('/listings', async (req, res) => {
     try {
-      const listings = await Listing.find().sort({ createdAt: -1 }); // Assuming `Listing` is your model
+      const limit = parseInt(req.query.limit) || 10; // Default to 10 listings per page
+    const skip = parseInt(req.query.skip) || 0;
+
+      const listings = await Listing.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+
       res.status(200).json(listings);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Error fetching listings.' });
     }
   });
-  
-  app.get('/listings/:id', async (req, res) => {
-   // console.log("Incoming Request for ID:", req.params.id);  // Log the request
+
+  app.get("/user-listings", async (req, res) => {
     try {
-      const product = await Listing.findOne({ _id: new ObjectId(req.params.id) });
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+      const token = req.cookies.jwt;
+      if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
       }
-      res.json(product);
+  
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const listings = await Listing.find({ user: decoded.id });
+  
+      res.status(200).json(listings);
     } catch (error) {
-      res.status(500).json({ error: 'An error occurred while fetching the product.' });
+      console.error("Error fetching user listings:", error);
+      res.status(500).json({ message: "Something went wrong" });
     }
   });
+  
+  
+  app.get('/listings/:id', async (req, res) => {
+    try {
+        // Fetch listing and populate the user field to include name and whatsappNumber
+        const product = await Listing.findById(req.params.id).populate('user', 'name whatsapp');
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        res.json(product);
+    } catch (error) {
+        console.error("Error fetching product:", error.message);
+        res.status(500).json({ error: 'An error occurred while fetching the product.' });
+    }
+});
+
   
 // Upload route
 app.post('/upload', upload.array('images', 10), async (req, res) => {
@@ -175,7 +206,7 @@ app.post('/upload', upload.array('images', 10), async (req, res) => {
   // Route to create a new listing
   
 app.post("/listings",upload.array("images", 10), async (req, res) => {
-  console.log("Received request to create listing");
+ // console.log("Received request to create listing");
 
   try {
     if (!req.files || req.files.length === 0) {
@@ -191,12 +222,25 @@ app.post("/listings",upload.array("images", 10), async (req, res) => {
     cloudinary.uploader.upload(file.path, {
       folder: "listings", // Folder in Cloudinary
     })
-  );
+   );
     // Wait for all uploads to finish
     const uploadResults = await Promise.all(uploadPromises);
 
     // Extract URLs from Cloudinary response
     const imageUrls = uploadResults.map((result) => result.secure_url);
+
+     // 🔹 Authenticate user
+     const token = req.cookies.jwt;
+     if (!token) {
+       return res.status(401).json({ message: "Unauthorized" });
+     }
+
+     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
 
     // Create a new listing object
     const newListing = new Listing({
@@ -207,6 +251,7 @@ app.post("/listings",upload.array("images", 10), async (req, res) => {
       location: req.body.location,
       category: req.body.category,
       images: imageUrls,
+      user: user._id, // Assign the authenticated user
     });
 
     // Save to database

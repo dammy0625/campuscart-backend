@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
       return !this.googleId; // ❗️ Only require password if googleId is not present
     },
   },
+  whatsapp: {
+    type: String,
+    default: "", // Optional field to store WhatsApp number
+  },
 }, { timestamps: true });
 
 const User = mongoose.model("User", UserSchema);

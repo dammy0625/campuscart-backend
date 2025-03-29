@@ -182,4 +182,32 @@ router.get("/me", async (req, res) => {
   }
 });
 
+
+// Endpoint to update the user's WhatsApp number
+router.post("/update-whatsapp", async (req, res) => {
+  try {
+    // Get the JWT token from cookies
+    const token = req.cookies.jwt;
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Verify token to get the user ID
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update the WhatsApp number from the request body
+    user.whatsapp = req.body.whatsapp;
+    await user.save();
+
+    return res.status(200).json({ message: "WhatsApp number updated successfully" });
+  } catch (error) {
+    console.error("Error updating WhatsApp number:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
 module.exports = router;

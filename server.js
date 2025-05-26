@@ -46,7 +46,7 @@ app.use(express.urlencoded({ extended: true })); // For URL-encoded data
 app.use(cookieParser()); // Must be before your routes!
 
 
-app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
+app.use(cors({ origin: ['http://localhost:3000', 'https://campuscart-wo52.vercel.app/'], credentials: true }));
 app.use(
   session({ 
     secret: process.env.SESSION_SECRET,

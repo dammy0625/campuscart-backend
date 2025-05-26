@@ -112,7 +112,21 @@ app.get('/listings', async (req, res) => {
       const limit = parseInt(req.query.limit) || 10; // Default to 10 listings per page
     const skip = parseInt(req.query.skip) || 0;
 
-      const listings = await Listing.find()
+    const { category, condition, location, minPrice, maxPrice } = req.query;
+
+    const filters = {};
+    if (category) filters.category = category;
+    if (condition) filters.condition = condition;
+    if (location) filters.location = { $regex: new RegExp(location, 'i') };
+    if (minPrice || maxPrice) {
+      filters.price = {};
+      if (minPrice) filters.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filters.price.$lte = parseFloat(maxPrice);
+    }
+
+
+
+      const listings = await Listing.find(filters)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -140,7 +154,7 @@ app.get('/listings', async (req, res) => {
       res.status(500).json({ message: "Something went wrong" });
     }
   });
-  
+ 
   
   app.get('/listings/:id', async (req, res) => {
     try {
@@ -156,6 +170,22 @@ app.get('/listings', async (req, res) => {
         console.error("Error fetching product:", error.message);
         res.status(500).json({ error: 'An error occurred while fetching the product.' });
     }
+});
+
+app.get('/search', async (req, res) => {
+  const { query } = req.query;
+  try {
+    const results = await Listing.find({
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { category: { $regex: query, $options: 'i' } },
+        { location: { $regex: query, $options: 'i' } }
+      ]
+    });
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ message: "Search failed" });
+  }
 });
 
   

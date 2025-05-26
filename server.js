@@ -31,7 +31,7 @@ const User = require("./models/user");
 //console.log(universityList);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB Atlas
 connectDB();

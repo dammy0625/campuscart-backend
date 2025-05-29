@@ -67,13 +67,20 @@ router.get(
     const user = req.user;
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
+     // CORRECTED cookie settings for mobile compatibility
+    const isProduction = process.env.NODE_ENV === "production";
+
     // Set token in HTTP-only cookie
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: isProduction,
+      sameSite: isProduction? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path:"/",
     });
+
+    // Debug log to check if cookie is being set
+    console.log(`Setting cookie for user ${user._id}, production: ${isProduction}`);
 
     const redirectTo = process.env.FRONTEND_URL || 'https://campuscart-wo52.vercel.app';
 
@@ -83,10 +90,12 @@ router.get(
 
 // Logout Route
 router.post("/logout", (req, res) => {
+ const isProduction = process.env.NODE_ENV === "production";
+
   res.clearCookie("jwt", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/"
   });
     // If you're using PassportJS, you can call req.logout

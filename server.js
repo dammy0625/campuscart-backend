@@ -48,8 +48,8 @@ app.use(cookieParser()); // Must be before your routes!
 
 app.use(cors({
    origin: [
-    'http://localhost:3000',
-     'https://campuscart-wo52.vercel.app'],
+     'https://campuscart-wo52.vercel.app',
+    'http://localhost:3000'],
       credentials: true ,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

@@ -71,11 +71,11 @@ router.get(
     res.cookie("jwt", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "production" ? "none" : "lax" ,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    const redirectTo = process.env.FRONTEND_URL || 'https://https://campuscart-wo52.vercel.app';
+    const redirectTo = process.env.FRONTEND_URL || 'https://campuscart-wo52.vercel.app';
 
     res.redirect(`${redirectTo}/dashboard`); // Redirect to frontend after login
   }
@@ -175,7 +175,7 @@ router.post("/login", async (req, res) => {
 
 // Get user data from token
 router.get("/me", async (req, res) => {
- // console.log("Cookies received:", req.cookies); // Debugging log
+  console.log("Cookies received:", req.cookies); 
   const token = req.cookies.jwt;
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 

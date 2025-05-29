@@ -75,7 +75,7 @@ router.get(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    const redirectTo = process.env.FRONTEND_UR || 'http://localhost:3000';
+    const redirectTo = process.env.FRONTEND_URL || 'https://https://campuscart-wo52.vercel.app';
 
     res.redirect(`${redirectTo}/dashboard`); // Redirect to frontend after login
   }

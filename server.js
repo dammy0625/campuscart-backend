@@ -58,9 +58,13 @@ app.use(cors({
     }));
 
     app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Credentials', 'true');
+  if (process.env.NODE_ENV === "production" && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect('https://' + req.headers.host + req.url);
+  }
   next();
 });
+
+   
 
 app.use(
   session({ 

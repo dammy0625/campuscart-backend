@@ -46,6 +46,8 @@ app.use(express.urlencoded({ extended: true })); // For URL-encoded data
 app.use(cookieParser()); // Must be before your routes!
 
 
+
+
 app.use(cors({
    origin: [
      'https://campuscart-wo52.vercel.app',
@@ -54,6 +56,12 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
     }));
+
+    app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 app.use(
   session({ 
     secret: process.env.SESSION_SECRET,

@@ -73,8 +73,8 @@ router.get(
     // Set token in HTTP-only cookie
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction? "none" : "lax",
+      secure: true ,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path:"/",
     });

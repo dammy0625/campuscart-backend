@@ -79,6 +79,11 @@ router.get(
       
     });
 
+    console.log('=== LOGIN DEBUG ===');
+console.log('User agent:', req.get('user-agent'));
+console.log('Setting cookie with sameSite: None, secure: true');
+console.log('====================');
+
     // Debug log to check if cookie is being set
     console.log(`Setting cookie for user ${user._id}, production: ${isProduction}`);
 
@@ -170,8 +175,8 @@ router.post("/login", async (req, res) => {
 
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
